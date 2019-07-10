@@ -1,0 +1,244 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+application pimpleFoam;
+
+startFrom latestTime;
+
+startTime 0;
+
+stopAt endTime;
+
+endTime 5;
+
+deltaT 1e-05;
+
+writeControl adjustableRunTime;
+
+writeInterval 1;
+
+purgeWrite 0;
+
+writeFormat ascii;
+
+writePrecision 7;
+
+writeCompression on;
+
+timeFormat general;
+
+timePrecision 7;
+
+adjustTimeStep yes;
+
+maxCo 0.5;
+
+runTimeModifiable true;
+
+functions
+{
+
+#includeFunc scalarTransport
+
+fieldAverage1
+{
+type fieldAverage;
+libs ("libfieldFunctionObjects.so");
+enabled true;
+writeControl writeTime;
+fields
+(
+U
+{
+mean on;
+prime2Mean on;
+base time;
+}
+
+s
+{
+mean on;
+prime2Mean on;
+base time;
+} 
+);
+} 
+slice
+{
+type surfaces;
+libs ("libsampling.so");
+
+outputControl timeStep;
+outputInterval 150;
+
+surfaceFormat vtk;
+interpolationScheme cellPoint;
+
+x (1 0 0);
+y (0 1 0);
+z (0 0 1);
+origin (0 0 0);
+
+cuttingPlane
+{
+type cuttingPlane;
+planeType pointAndNormal;
+pointAndNormalDict
+{
+point $origin;
+normal $z;
+}
+interpolate true;
+}
+
+isosurface
+{
+type isoSurface;
+interpolate false;
+}
+
+patchSurface
+{
+type patch;
+interpolate false;
+}
+
+fields (U s);
+
+surfaces 
+(
+zNormal
+{
+$cuttingPlane;
+pointAndNormalDict
+{
+point $origin;
+normal $z;
+}
+} 
+);
+}
+
+
+probe
+{
+type probes;
+libs ("libsampling.so");
+
+writeControl timeStep;
+writeInterval 1;
+
+fields (s U);
+probeLocations
+(
+(-0.0075 0.01 0)
+(0.01 0.015 0)
+(0.08 0.03 0)
+(-0.0075 -0.01 0)
+(0.01 -0.015 0)
+(0.08 -0.03 0)
+(0.025 0 0) 
+);
+
+}
+
+lines
+{
+type sets;
+libs ("libsampling.so");
+writeControl timeStep;
+writeInterval 1;
+// outputControl outputTime;
+interpolationScheme cellPoint;
+setFormat raw;
+fields (s U); //(UMean sMean)
+sets (
+line1
+{
+type lineUniform;
+axis x;
+start (-0.023 0 0);
+end (0.33 0 0);
+nPoints 1000;
+}
+line2a
+{
+type lineUniform;
+axis x;
+start (-0.023 -0.1 0);
+end (-0.023 -0.0226 0);
+nPoints 1000;
+}
+line2b
+{
+type lineUniform;
+axis x;
+start (-0.023 0.1 0);
+end (-0.023 0.0226 0);
+nPoints 1000;
+}
+line3a
+{
+type lineUniform;
+axis x;
+start (0 -0.1 0);
+end (0 -0.0226 0);
+nPoints 1000;
+}
+line3b
+{
+type lineUniform;
+axis x;
+start (0 0.1 0);
+end (0 0.0226 0);
+nPoints 1000;
+}
+line4a
+{
+type lineUniform;
+axis x;
+start (0.015 -0.1 0);
+end (0.015 -0.02 0);
+nPoints 1000;
+}
+line4b
+{
+type lineUniform;
+axis x;
+start (0.015 0.1 0);
+end (0.015 0.02 0);
+nPoints 1000;
+}
+line5
+{
+type lineUniform;
+axis x;
+start (0.035 -0.1 0);
+end (0.035 0.1 0);
+nPoints 1000;
+}
+line6
+{
+type lineUniform;
+axis x;
+start (-0.035 -0.1 0) ;
+end (-0.035 0.1 0);
+nPoints 1000;
+}
+);
+}// ************************************************************************* //
